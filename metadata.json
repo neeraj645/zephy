@@ -1,0 +1,5 @@
+{
+  "name": "Zephyr Chat Pro",
+  "description": "A sophisticated, ChatGPT-inspired conversational AI interface powered by Google's Gemini models, featuring chat history, persistent sessions, and search grounding.",
+  "requestFramePermissions": []
+}
