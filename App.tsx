@@ -182,15 +182,13 @@ const App: React.FC = () => {
             <div className="h-6 w-[1px] bg-white/10"></div>
             <div className="flex items-center gap-2.5">
                <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
-               <span className="font-bold tracking-tight text-white/90">Zephyr 3.0 Pro</span>
+               <span className="font-bold tracking-tight text-white/90">Zephyr 1.0</span>
                <span className="hidden md:inline px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-[9px] font-bold text-gray-500 uppercase tracking-widest">Experimental</span>
             </div>
           </div>
           
           <div className="flex items-center gap-3">
-             <button className="p-2 hover:bg-white/5 text-gray-400 hover:text-white rounded-lg transition-all border border-transparent hover:border-white/10">
-               <i className="far fa-share-square"></i>
-             </button>
+             {/* Share button removed as requested */}
           </div>
         </header>
 
@@ -274,9 +272,7 @@ const App: React.FC = () => {
                 className="flex-1 bg-transparent border-none outline-none focus:ring-0 text-[#f0f0f0] placeholder-gray-500 py-3.5 resize-none max-h-52 text-[15px] font-medium leading-relaxed"
               />
               <div className="flex items-center gap-2 pr-1 pb-1">
-                  <button className="p-3 text-gray-500 hover:text-teal-500 hover:bg-white/5 rounded-xl transition-all">
-                    <i className="fas fa-paperclip text-sm"></i>
-                  </button>
+                  {/* Paperclip button removed as requested */}
                   <button
                     onClick={() => handleSubmit()}
                     disabled={!input.trim() || isThinking}
