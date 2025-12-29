@@ -10,7 +10,8 @@ const App: React.FC = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Initialize sidebar to be closed on mobile (width < 768px) and open on desktop
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -20,10 +21,25 @@ const App: React.FC = () => {
     if (savedChats) {
       const parsed = JSON.parse(savedChats);
       setChats(parsed);
-      if (parsed.length > 0 && !activeChatId) {
+      // We don't automatically select the last chat on mobile if we want to land on the "Home Screen"
+      // But if the user wants a specific active chat, we can keep this. 
+      // To strictly follow "default home screen", we could leave activeChatId as null initially.
+      if (parsed.length > 0 && !activeChatId && window.innerWidth >= 768) {
         setActiveChatId(parsed[0].id);
       }
     }
+
+    // Handle window resize to adjust sidebar
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -188,7 +204,6 @@ const App: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-3">
-             {/* Share button removed as requested */}
           </div>
         </header>
 
@@ -272,7 +287,6 @@ const App: React.FC = () => {
                 className="flex-1 bg-transparent border-none outline-none focus:ring-0 text-[#f0f0f0] placeholder-gray-500 py-3.5 resize-none max-h-52 text-[15px] font-medium leading-relaxed"
               />
               <div className="flex items-center gap-2 pr-1 pb-1">
-                  {/* Paperclip button removed as requested */}
                   <button
                     onClick={() => handleSubmit()}
                     disabled={!input.trim() || isThinking}
