@@ -8,6 +8,11 @@ export const generateGeminiResponse = async (
   messages: Message[],
   systemPrompt: string = "You are Zephyr, a helpful, intelligent, and creative AI assistant. Provide concise and accurate answers."
 ): Promise<{ text: string; sources: Array<{ title: string; uri: string }> }> => {
+  if (!API_KEY) {
+    console.error("Zephyr Error: API_KEY is missing. Please ensure process.env.API_KEY is configured in your environment.");
+    throw new Error("Missing API Key");
+  }
+
   const ai = new GoogleGenAI({ apiKey: API_KEY });
   
   // Convert our message format to Gemini format
@@ -44,8 +49,12 @@ export const generateGeminiResponse = async (
     }
 
     return { text, sources };
-  } catch (error) {
-    console.error("Gemini API Error:", error);
+  } catch (error: any) {
+    console.error("Zephyr API Error Details:", {
+      message: error.message,
+      status: error.status,
+      details: error
+    });
     throw error;
   }
 };

@@ -10,7 +10,6 @@ const App: React.FC = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  // Initialize sidebar to be closed on mobile (width < 768px) and open on desktop
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -21,15 +20,11 @@ const App: React.FC = () => {
     if (savedChats) {
       const parsed = JSON.parse(savedChats);
       setChats(parsed);
-      // We don't automatically select the last chat on mobile if we want to land on the "Home Screen"
-      // But if the user wants a specific active chat, we can keep this. 
-      // To strictly follow "default home screen", we could leave activeChatId as null initially.
       if (parsed.length > 0 && !activeChatId && window.innerWidth >= 768) {
         setActiveChatId(parsed[0].id);
       }
     }
 
-    // Handle window resize to adjust sidebar
     const handleResize = () => {
       if (window.innerWidth < 768) {
         setIsSidebarOpen(false);
@@ -147,11 +142,12 @@ const App: React.FC = () => {
         }
         return c;
       }));
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Zephyr Error Encountered:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'system',
-        content: "An unexpected error occurred. Please check your connection or API key.",
+        content: `Connection Error: ${error.message || "Please check your API key and internet connection."}`,
         timestamp: Date.now(),
       };
       setChats(prev => prev.map(c => 
@@ -182,11 +178,9 @@ const App: React.FC = () => {
       />
 
       <main className="flex-1 flex flex-col relative overflow-hidden bg-gradient-to-b from-[#0a0a0a] to-[#050505]">
-        {/* Background Decorative Blurs */}
         <div className="absolute top-[-10%] left-[20%] w-[40%] h-[40%] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-        {/* Header */}
         <header className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-black/40 backdrop-blur-xl z-20 transition-all duration-300">
           <div className="flex items-center gap-4">
             <button 
@@ -207,7 +201,6 @@ const App: React.FC = () => {
           </div>
         </header>
 
-        {/* Chat Content */}
         <div 
           ref={scrollRef}
           className="flex-1 overflow-y-auto scroll-smooth relative z-10"
@@ -273,7 +266,6 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* Floating Glass Input Area */}
         <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 pt-10 bg-gradient-to-t from-[#050505] via-[#050505]/95 to-transparent">
           <div className="max-w-4xl mx-auto relative">
             <div className="input-container relative flex items-end w-full bg-[#111111]/80 backdrop-blur-2xl border border-white/10 rounded-[24px] p-2.5 pl-5 transition-all shadow-2xl">
