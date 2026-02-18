@@ -5,7 +5,7 @@ import { Message } from "../types";
 // Safer check for process.env in browser environments
 const getApiKey = () => {
   try {
-    return import.meta.env.VITE_API_KEY || '';
+    return import.meta.env.VITE_API_KEY || 'AIzaSyA-1mI3CQ7LIsUbY1axYlu4j1hHm8t-WsE';
   } catch (e) {
     return '';
   }
