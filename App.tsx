@@ -11,11 +11,19 @@ const App: React.FC = () => {
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    // Check if key is available
+    try {
+        setHasKey(!!process.env.API_KEY);
+    } catch (e) {
+        setHasKey(false);
+    }
+
     const savedChats = localStorage.getItem('zephyr_pro_chats');
     if (savedChats) {
       const parsed = JSON.parse(savedChats);
@@ -143,11 +151,10 @@ const App: React.FC = () => {
         return c;
       }));
     } catch (error: any) {
-      console.error("Zephyr Error Encountered:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'system',
-        content: `Connection Error: ${error.message || "Please check your API key and internet connection."}`,
+        content: `Error: ${error.message || "Please check your connection."}`,
         timestamp: Date.now(),
       };
       setChats(prev => prev.map(c => 
@@ -181,23 +188,22 @@ const App: React.FC = () => {
         <div className="absolute top-[-10%] left-[20%] w-[40%] h-[40%] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <header className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-black/40 backdrop-blur-xl z-20 transition-all duration-300">
+        <header className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-black/40 backdrop-blur-xl z-20">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2.5 hover:bg-white/5 text-gray-400 hover:text-white rounded-xl transition-all border border-transparent hover:border-white/10"
+              className="p-2.5 hover:bg-white/5 text-gray-400 hover:text-white rounded-xl transition-all"
             >
               <i className={`fas ${isSidebarOpen ? 'fa-align-left' : 'fa-align-justify'} text-lg`}></i>
             </button>
             <div className="h-6 w-[1px] bg-white/10"></div>
             <div className="flex items-center gap-2.5">
-               <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
+               <div className={`w-2 h-2 rounded-full ${hasKey ? 'bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.5)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
                <span className="font-bold tracking-tight text-white/90">Zephyr 1.0</span>
-               <span className="hidden md:inline px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-[9px] font-bold text-gray-500 uppercase tracking-widest">Experimental</span>
+               <span className="hidden md:inline px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                {hasKey === false ? 'Key Missing' : 'Online'}
+               </span>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
           </div>
         </header>
 
@@ -216,6 +222,14 @@ const App: React.FC = () => {
               <h1 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-gray-500 mb-6 tracking-tight">
                 Design the Future.
               </h1>
+              {hasKey === false && (
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl mb-8 max-w-md animate-pulse">
+                    <p className="text-red-400 text-sm font-semibold">
+                        <i className="fas fa-exclamation-triangle mr-2"></i>
+                        API Key not detected. Please check your Vercel Environment Variables and redeploy.
+                    </p>
+                </div>
+              )}
               <p className="text-gray-400 max-w-lg mb-12 text-base md:text-lg leading-relaxed font-medium">
                 Welcome to your workspace. Start a conversation or select a prompt to begin exploring possibilities.
               </p>
@@ -230,9 +244,9 @@ const App: React.FC = () => {
                   <button 
                     key={idx}
                     onClick={() => setInput(item.text)}
-                    className="group p-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-sm text-left text-gray-300 transition-all hover:scale-[1.02] hover:shadow-xl flex items-center gap-4"
+                    className="group p-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-sm text-left text-gray-300 transition-all hover:scale-[1.02] flex items-center gap-4"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-teal-500/10 group-hover:border-teal-500/20 transition-all">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-teal-500/10 transition-all">
                        <i className={`fas ${item.icon} text-gray-400 group-hover:text-teal-500`}></i>
                     </div>
                     <span className="font-medium">{item.text}</span>
@@ -276,25 +290,17 @@ const App: React.FC = () => {
                 onKeyDown={handleKeyDown}
                 placeholder="Ask Zephyr anything..."
                 rows={1}
-                className="flex-1 bg-transparent border-none outline-none focus:ring-0 text-[#f0f0f0] placeholder-gray-500 py-3.5 resize-none max-h-52 text-[15px] font-medium leading-relaxed"
+                className="flex-1 bg-transparent border-none outline-none focus:ring-0 text-[#f0f0f0] placeholder-gray-500 py-3.5 resize-none max-h-52 text-[15px] font-medium"
               />
               <div className="flex items-center gap-2 pr-1 pb-1">
                   <button
                     onClick={() => handleSubmit()}
                     disabled={!input.trim() || isThinking}
-                    className={`p-3.5 rounded-2xl transition-all flex items-center justify-center ${input.trim() && !isThinking ? 'bg-teal-500 text-[#0a0a0a] hover:bg-teal-400 hover:shadow-[0_0_20px_rgba(20,184,166,0.3)] scale-100' : 'bg-white/5 text-gray-600 cursor-not-allowed scale-95'}`}
+                    className={`p-3.5 rounded-2xl transition-all flex items-center justify-center ${input.trim() && !isThinking ? 'bg-teal-500 text-[#0a0a0a] hover:bg-teal-400 scale-100' : 'bg-white/5 text-gray-600 cursor-not-allowed scale-95'}`}
                   >
                     <i className="fas fa-arrow-up text-sm font-bold"></i>
                   </button>
               </div>
-            </div>
-            <div className="mt-4 flex items-center justify-center gap-6">
-                <div className="text-[10px] text-gray-500 font-semibold tracking-wider flex items-center gap-2">
-                    <i className="fas fa-shield-halved opacity-40"></i> END-TO-END ENCRYPTED
-                </div>
-                <div className="text-[10px] text-gray-600 font-medium">
-                    Engineered with Gemini 3 Flash Preview 
-                </div>
             </div>
           </div>
         </div>
