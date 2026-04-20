@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Sidebar from './components/Sidebar';
 import ChatMessage from './components/ChatMessage';
 import { Chat, Message } from './types';
 import { generateGeminiResponse } from './services/geminiService';
@@ -10,7 +9,6 @@ const App: React.FC = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -18,31 +16,16 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Check if key is available
-    try {
-        setHasKey(!!process.env.API_KEY);
-    } catch (e) {
-        setHasKey(false);
-    }
+    setHasKey(!!process.env.GEMINI_API_KEY);
 
     const savedChats = localStorage.getItem('zephyr_pro_chats');
     if (savedChats) {
       const parsed = JSON.parse(savedChats);
       setChats(parsed);
-      if (parsed.length > 0 && !activeChatId && window.innerWidth >= 768) {
+      if (parsed.length > 0 && !activeChatId) {
         setActiveChatId(parsed[0].id);
       }
     }
-
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setIsSidebarOpen(false);
-      } else {
-        setIsSidebarOpen(true);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -74,12 +57,10 @@ const App: React.FC = () => {
     };
     setChats(prev => [newChat, ...prev]);
     setActiveChatId(newChat.id);
-    if (window.innerWidth < 768) setIsSidebarOpen(false);
   }, []);
 
   const handleSelectChat = (id: string) => {
     setActiveChatId(id);
-    if (window.innerWidth < 768) setIsSidebarOpen(false);
   };
 
   const handleDeleteChat = (id: string, e: React.MouseEvent) => {
@@ -174,29 +155,12 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen w-full bg-[#050505] text-[#e5e5e5] overflow-hidden font-jakarta">
-      <Sidebar 
-        chats={chats}
-        activeChatId={activeChatId}
-        onSelectChat={handleSelectChat}
-        onNewChat={handleNewChat}
-        onDeleteChat={handleDeleteChat}
-        isSidebarOpen={isSidebarOpen}
-        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
-
       <main className="flex-1 flex flex-col relative overflow-hidden bg-gradient-to-b from-[#0a0a0a] to-[#050505]">
         <div className="absolute top-[-10%] left-[20%] w-[40%] h-[40%] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
         <header className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-black/40 backdrop-blur-xl z-20">
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2.5 hover:bg-white/5 text-gray-400 hover:text-white rounded-xl transition-all"
-            >
-              <i className={`fas ${isSidebarOpen ? 'fa-align-left' : 'fa-align-justify'} text-lg`}></i>
-            </button>
-            <div className="h-6 w-[1px] bg-white/10"></div>
             <div className="flex items-center gap-2.5">
                <div className={`w-2 h-2 rounded-full ${hasKey ? 'bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.5)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
                <span className="font-bold tracking-tight text-white/90">Zephyr 1.0</span>
@@ -204,6 +168,15 @@ const App: React.FC = () => {
                 {hasKey === false ? 'Key Missing' : 'Online'}
                </span>
             </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleNewChat}
+              className="p-2 px-4 bg-white/5 hover:bg-white/10 text-xs font-semibold rounded-lg border border-white/10 transition-all flex items-center gap-2"
+            >
+              <i className="fas fa-plus"></i> New Chat
+            </button>
           </div>
         </header>
 
@@ -226,7 +199,7 @@ const App: React.FC = () => {
                 <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl mb-8 max-w-md animate-pulse">
                     <p className="text-red-400 text-sm font-semibold">
                         <i className="fas fa-exclamation-triangle mr-2"></i>
-                        API Key not detected. Please check your Vercel Environment Variables and redeploy.
+                        API Key not detected. Please check your environment variables.
                     </p>
                 </div>
               )}

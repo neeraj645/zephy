@@ -4,11 +4,7 @@ import { Message } from "../types";
 
 // Safer check for process.env in browser environments
 const getApiKey = () => {
-  try {
-    return import.meta.env.VITE_API_KEY || 'AIzaSyA-1mI3CQ7LIsUbY1axYlu4j1hHm8t-WsE';
-  } catch (e) {
-    return '';
-  }
+  return process.env.GEMINI_API_KEY || '';
 };
 
 const API_KEY = getApiKey();
@@ -18,8 +14,8 @@ export const generateGeminiResponse = async (
   systemPrompt: string = "You are Zephyr, a helpful, intelligent, and creative AI assistant. Provide concise and accurate answers."
 ): Promise<{ text: string; sources: Array<{ title: string; uri: string }> }> => {
   if (!API_KEY) {
-    console.error("Zephyr Error: API_KEY is missing. In Vercel, ensure you have added API_KEY to Environment Variables and REDEPLOYED.");
-    throw new Error("Missing API Key. Please check your Vercel Environment Variables and redeploy.");
+    console.error("Zephyr Error: GEMINI_API_KEY is missing.");
+    throw new Error("Missing API Key. Please provide GEMINI_API_KEY.");
   }
 
   const ai = new GoogleGenAI({ apiKey: API_KEY });
