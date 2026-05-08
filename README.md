@@ -53,6 +53,6 @@ The project structure is organized as follows:
 - `/src/components/ChatMessage.tsx`: Component for rendering individual messages.
 - `/src/types.ts`: TypeScript definitions for the application state.
 
-## License
+## License 
 
 This project is open-source and available for everyone. Feel free to use it as a starting point for your own Gemini-powered applications.
